@@ -122,13 +122,12 @@ class Store(Resource):
 
 
 class Get(Resource):
-    def get(self):
+    def post(self):
         # Getting the json data from the request
         postedData = request.get_json()
 
         userName = postedData["Username"]
         password = postedData["Password"]
-        sentence = postedData["Sentence"]
 
         # Verify the password
         correctPw = verifyPw(userName, password)
@@ -148,6 +147,15 @@ class Get(Resource):
                 "message": "You don't have enough tokens"
             }
             return jsonify(retJson)
+
+        # Make the user pay
+        users.update_one({
+            "Username": userName
+        }, {
+            "$set": {
+                "Tokens": numTokens-1
+            }
+        })
 
         # Return the sentence
         sentence = users.find_one({"Username": userName})["Sentence"]
